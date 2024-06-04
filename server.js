@@ -1,14 +1,27 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const openai = require('openai');
-const client = require('twilio');
+const twilio = require('twilio');
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const corsOptions = {
+  origin: 'http://localhost:3000', // Allow only this origin
+  methods: ['GET', 'POST'], // Allow only these methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow only these headers
+  credentials: true, // Allow cookies to be sent
+  optionsSuccessStatus: 200 // For legacy browser support
+};
+
+app.use(cors(corsOptions));
+
 const port = process.env.PORT || 3000;
+
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 // Webhook endpoint for Twilio
 app.post('/whatsapp', async (req, res) => {
@@ -23,7 +36,7 @@ app.post('/whatsapp', async (req, res) => {
 
     const message = response.data.choices[0].text.trim();
 
-    await client.messages.create({
+    await twilioClient.messages.create({
       body: message,
       from: 'whatsapp:+14155238886', // Your Twilio WhatsApp number
       to: From,
