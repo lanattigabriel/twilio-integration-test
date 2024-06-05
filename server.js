@@ -7,36 +7,16 @@ require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true })); 
 
-const port = process.env.PORT || 3000;
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
 
-// Webhook endpoint for Twilio
-app.post('/whatsapp', async (req, res) => {
-  const { Body, From } = req.body;
-  
-  try {
-    const response = await openai.createCompletion({
-      model: 'text-davinci-003',
-      prompt: Body,
-      max_tokens: 150,
-    });
-
-    const message = response.data.choices[0].text.trim();
-
-    await client.messages.create({
-      body: message,
-      from: 'whatsapp:+14155238886', // Your Twilio WhatsApp number
-      to: From,
-    });
-
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error: ', error);
-    res.sendStatus(500);
-  }
-});
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+client.messages
+    .create({
+        body: 'Test',
+        from: 'whatsapp:+14155238886',
+        to: 'whatsapp:+5491133871991'
+    })
+    .then(message => console.log(message.sid))
